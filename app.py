@@ -21,24 +21,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-MODEL_PATH = "model_mobilenetv2_daun_jagung.keras"
+MODEL_PATH = "model_jagung_mobilenetv2.keras"
 FALLBACK_IMG_SIZE = (224, 224)
 
-PREPROCESS_MODE = "rescale"
-
+PREPROCESS_MODE = "mobilenet"
 CLASS_INFO = [
     {
-        "label": "Karat Daun Jagung",
-        "latin": "Puccinia sorghi",
-        "condition": "Karat Daun disebabkan oleh jamur Puccinia sorghi, ditandai bintik-bintik "
-        "kecil berwarna coklat kemerahan menyerupai karat di permukaan daun.",
-        "treatment": "Aplikasikan fungisida berbahan aktif triazol, buang daun yang terserang "
-        "berat, dan hindari kelembapan berlebih di sekitar tanaman.",
-        "tone": "warning",
-        "icon": "🟠",
-    },
-    {
-        "label": "Hawar Daun Jagung",
+        # INDEX 0: B untuk Blight (Hawar Daun)
+        "label": "Hawar Daun Jagung (Blight)",
         "latin": "Exserohilum turcicum",
         "condition": "Hawar Daun Utara disebabkan oleh jamur Exserohilum turcicum, ditandai "
         "bercak panjang berbentuk cerutu berwarna coklat keabu-abuan.",
@@ -48,7 +38,19 @@ CLASS_INFO = [
         "icon": "🟠",
     },
     {
-        "label": "Bercak Daun Cercospora",
+        # INDEX 1: C untuk Common Rust (Karat Daun)
+        "label": "Karat Daun Jagung (Common Rust)",
+        "latin": "Puccinia sorghi",
+        "condition": "Karat Daun disebabkan oleh jamur Puccinia sorghi, ditandai bintik-bintik "
+        "kecil berwarna coklat kemerahan menyerupai karat di permukaan daun.",
+        "treatment": "Aplikasikan fungisida berbahan aktif triazol, buang daun yang terserang "
+        "berat, dan hindari kelembapan berlebih di sekitar tanaman.",
+        "tone": "warning",
+        "icon": "🟠",
+    },
+    {
+        # INDEX 2: G untuk Gray Leaf Spot (Bercak Daun)
+        "label": "Bercak Daun Cercospora (Gray Leaf Spot)",
         "latin": "Cercospora zeae-maydis",
         "condition": "Bercak Daun Abu-abu disebabkan oleh jamur Cercospora zeae-maydis, dengan "
         "gejala bercak persegi panjang berwarna abu-abu hingga coklat di antara tulang daun.",
@@ -58,7 +60,8 @@ CLASS_INFO = [
         "icon": "🟤",
     },
     {
-        "label": "Daun Sehat",
+        # INDEX 3: H untuk Healthy (Sehat)
+        "label": "Daun Sehat (Healthy)",
         "latin": "Tidak terdeteksi penyakit",
         "condition": "Daun jagung tidak menunjukkan gejala penyakit yang signifikan. Pertahankan "
         "praktik budidaya yang baik agar tanaman tetap produktif.",
@@ -68,6 +71,7 @@ CLASS_INFO = [
         "icon": "🟢",
     },
 ]
+
 
 # =============================================================================
 # FUNGSI BANTU — MODEL
@@ -99,22 +103,26 @@ def get_input_size(model):
 
 def predict_image(model, image: Image.Image):
     size = get_input_size(model)
+    
+    # 1. Resize gambar sesuai ukuran model (224x224)
     img = image.convert("RGB").resize(size)
+    
+    # 2. Ubah gambar ke format matriks angka (biarkan nilainya utuh 0 - 255)
     arr = np.asarray(img).astype("float32")
 
-    if PREPROCESS_MODE == "mobilenet":
-        from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-        arr = preprocess_input(arr)
-    else:
-        arr = arr / 255.0
+    # PENTING: KITA MENGHAPUS SEMUA KODE PREPROCESS_MODE DI SINI!
+    # Karena model keras yang kita latih di Colab sudah memiliki 
+    # layer preprocess_input yang tertanam di dalamnya.
 
+    # 3. Tambahkan dimensi batch agar sesuai dengan input model
     arr = np.expand_dims(arr, axis=0)
+    
+    # 4. Lakukan prediksi
     preds = model.predict(arr, verbose=0)[0]
     idx = int(np.argmax(preds))
     confidence = float(preds[idx]) * 100
+    
     return idx, confidence, preds
-
-
 # =============================================================================
 # HELPER — encode gambar ke base64 agar bisa dipakai di CSS url()
 # =============================================================================
