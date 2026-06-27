@@ -403,6 +403,33 @@ div[data-testid="stAppViewBlockContainer"]{{
 
 /* =========================Analisis============================*/
 
+div[data-testid="stButton"] button[kind="primary"],
+div[data-testid="stButton"] button[kind="primary"] p,
+div[data-testid="stButton"] button[kind="primary"] span {{
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}}
+
+div[data-testid="stButton"] button[kind="primary"] {{
+    background-color: var(--green-primary) !important;
+    border: none !important;
+    border-radius: 999px !important;
+    transition: all 0.2s ease !important;
+}}
+
+div[data-testid="stButton"] button[kind="primary"]:hover {{
+    background-color: var(--green-primary-hover) !important;
+    color: #ffffff !important;
+}}
+
+div[data-testid="stButton"] button[kind="primary"]:focus,
+div[data-testid="stButton"] button[kind="primary"]:active {{
+    background-color: #166534 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 999px !important;
+}}
 .text-center.section-subtitle{{
   margin-left:auto !important;
   margin-right:auto !important;
@@ -419,10 +446,13 @@ div[data-testid="stAppViewBlockContainer"]{{
 .dot.red{{ background:#f06a5e; }} .dot.yellow{{ background:#f0c259; }} .dot.green{{ background:#74c573; }}
 
 .st-key-upload_card, .st-key-result_card{{
-  background:var(--white); border:1px solid var(--border); border-top:none;
-  border-radius:0 0 var(--radius-md) var(--radius-md);
-  padding:34px 30px !important; min-height:330px;
+  background:var(--white); 
+  border:1px solid var(--border); 
+  border-radius:var(--radius-md); 
+  padding:34px 30px !important; 
+  min-height:330px;
   box-shadow:var(--shadow-md);
+  margin-top: 34px; 
 }}
 .st-key-upload_card{{ text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }}
 .upload-icon{{
@@ -655,12 +685,9 @@ with st.container(key="analisis_wrap"):
     st.markdown(
         """
         <div class="text-center">
-          <h2 class="section-title">Coba CornLeaf Detect Sekarang</h2>
+          <h2 class="section-title">Coba SiCorn Sekarang</h2>
           <p class="section-subtitle" style="margin:12px auto 0; text-align:center; display:block;">Unggah foto daun jagung Anda dan dapatkan
           diagnosis beserta rekomendasi penanganan.</p>
-        </div>
-        <div class="window-chrome">
-          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -683,7 +710,8 @@ with st.container(key="analisis_wrap"):
                 type=["jpg", "jpeg", "png"],
                 label_visibility="collapsed",
             )
-with col2:
+            
+    with col2:
         with st.container(key="result_card"):
             if uploaded_file is None:
                 st.markdown(
@@ -699,6 +727,11 @@ with col2:
             else:
                 try:
                     image = Image.open(uploaded_file)
+                    
+                    MAX_PREVIEW_SIZE = 500
+                    if max(image.size) > MAX_PREVIEW_SIZE:
+                        image.thumbnail((MAX_PREVIEW_SIZE, MAX_PREVIEW_SIZE))
+                        
                     model, err = load_model()
 
                     if model is None:
@@ -716,48 +749,54 @@ with col2:
                         )
                     else:
                         # --- (CROPPER) ---
-                        st.markdown("<p class='result-detail' style='text-align:center;'><b>📍 Instruksi:</b> Geser dan atur ukuran kotak hijau di bawah ini agar pas menyorot area bercak/sakit.</p>", unsafe_allow_html=True)
+                        st.markdown("<p class='result-detail' style='text-align:center;'><b>📍 Instruksi:</b> Geser kotak hijau ke area bercak/sakit. Setelah pas, <b>klik dua kali (double-click)</b> di dalam kotak hijau untuk mengunci, lalu klik tombol di bawah.</p>", unsafe_allow_html=True)
                         
-                        cropped_img = st_cropper(image, aspect_ratio=(1, 1), box_color='#2f7a45')
+                        cropped_img = st_cropper(
+                            image, 
+                            aspect_ratio=(1, 1), 
+                            box_color='#2f7a45',
+                            realtime_update=False
+                        )
 
-                        with st.spinner("Menganalisis potongan gambar..."):
-                            idx, confidence, preds = predict_image(model, cropped_img)
-                        # ----------------------------------------
+                        if st.button("Mulai Analisis", type="primary", use_container_width=True):
+                            with st.spinner("Menganalisis potongan gambar..."):
+                                idx, confidence, preds = predict_image(model, cropped_img)
+                            # ----------------------------------------
 
-                        with st.expander("🔍 Lihat detail probabilitas tiap kelas (debug)"):
-                            for i, p in enumerate(preds):
-                                nm = CLASS_INFO[i]["label"] if i < len(CLASS_INFO) else f"Kelas {i}"
-                                st.write(f"`indeks {i}` — {nm}: **{p * 100:.2f}%**")
+                            with st.expander("Lihat detail probabilitas tiap kelas (debug)"):
+                                for i, p in enumerate(preds):
+                                    nm = CLASS_INFO[i]["label"] if i < len(CLASS_INFO) else f"Kelas {i}"
+                                    st.write(f"`indeks {i}` — {nm}: **{p * 100:.2f}%**")
 
-                        if idx < len(CLASS_INFO):
-                            info = CLASS_INFO[idx]
-                            tone = "tone-success" if info["tone"] == "success" else "tone-warning"
-                            st.markdown(
-                                f"""
-                                <span class="result-badge {tone}">{info['icon']} Terdeteksi</span>
-                                <div class="result-label">{info['label']}</div>
-                                <div class="confidence-row">
-                                  <div class="confidence-bar-bg">
-                                    <div class="confidence-bar-fill {tone}" style="width:{confidence:.0f}%;"></div>
-                                  </div>
-                                  <span class="confidence-text">{confidence:.0f}%</span>
-                                </div>
-                                <p class="result-detail"><b>Kondisi:</b> {info['condition']}</p>
-                                <p class="result-detail"><b>Tindakan:</b> {info['treatment']}</p>
-                                """,
-                                unsafe_allow_html=True,
-                            )
-                        else:
-                            st.markdown(
-                                f"""
-                                <div class="model-warning">
-                                  ⚠️ Jumlah kelas keluaran model ({len(preds)}) tidak sesuai
-                                  dengan daftar <code>CLASS_INFO</code> ({len(CLASS_INFO)}).
-                                  Silakan sesuaikan konfigurasi kelas di <code>app.py</code>.
-                                </div>
-                                """,
-                                unsafe_allow_html=True,
-                            )
+                            if idx < len(CLASS_INFO):
+                                info = CLASS_INFO[idx]
+                                tone = "tone-success" if info["tone"] == "success" else "tone-warning"
+                                st.markdown(
+                                    f"""
+                                    <span class="result-badge {tone}">{info['icon']} Terdeteksi</span>
+                                    <div class="result-label">{info['label']}</div>
+                                    <div class="confidence-row">
+                                      <div class="confidence-bar-bg">
+                                        <div class="confidence-bar-fill {tone}" style="width:{confidence:.0f}%;"></div>
+                                      </div>
+                                      <span class="confidence-text">{confidence:.0f}%</span>
+                                    </div>
+                                    <p class="result-detail"><b>Kondisi:</b> {info['condition']}</p>
+                                    <p class="result-detail"><b>Tindakan:</b> {info['treatment']}</p>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
+                            else:
+                                st.markdown(
+                                    f"""
+                                    <div class="model-warning">
+                                      ⚠️ Jumlah kelas keluaran model ({len(preds)}) tidak sesuai
+                                      dengan daftar <code>CLASS_INFO</code> ({len(CLASS_INFO)}).
+                                      Silakan sesuaikan konfigurasi kelas di <code>app.py</code>.
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
                 except Exception as exc:
                     st.markdown(
                         f"""
