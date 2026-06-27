@@ -718,7 +718,7 @@ with col2:
                         # --- (CROPPER) ---
                         st.markdown("<p class='result-detail' style='text-align:center;'><b>📍 Instruksi:</b> Geser dan atur ukuran kotak hijau di bawah ini agar pas menyorot area bercak/sakit.</p>", unsafe_allow_html=True)
                         
-                        cropped_img = st_cropper(image, aspect_ratio=(1, 1), box_color='#2f7a45',realtime_update=False)
+                        cropped_img = st_cropper(image, aspect_ratio=(1, 1), box_color='#2f7a45')
 
                         with st.spinner("Menganalisis potongan gambar..."):
                             idx, confidence, preds = predict_image(model, cropped_img)
