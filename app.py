@@ -537,7 +537,6 @@ st.markdown(
       <a class="nav-link" href="#tentang">Tentang Kami</a>
       <a class="nav-link" href="#fitur">Fitur</a>
       <a class="nav-link" href="#cara-kerja">Cara Kerja</a>
-      <a class="btn-primary" href="#analisis">Analisis Sekarang</a>
     </div>
   </div>
 </div>
@@ -555,7 +554,7 @@ st.markdown(
     <p class="hero-subtitle">Klasifikasi penyakit daun jagung secara instan dan akurat
     menggunakan kecerdasan buatan, langsung dari foto yang Anda ambil di ladang.</p>
     <div class="hero-cta-row">
-      <a class="btn-primary btn-large" href="#analisis">Mulai Analisis Daun Jagung →</a>
+      <a class="btn-primary btn-large" href="#analisis">Coba Sekarang</a>
     </div>
   </div>
 </section>
@@ -632,7 +631,7 @@ st.markdown(
       <div class="feature-card">
         <div class="feature-icon">📱</div>
         <h3>Akses Kapan Saja</h3>
-        <p>Cukup unggah foto dari ponsel atau komputer — tanpa instalasi rumit, kapan
+        <p>Cukup unggah foto dari ponsel atau komputer tanpa instalasi rumit, kapan
         pun Anda membutuhkannya.</p>
       </div>
     </div>
@@ -685,7 +684,7 @@ with st.container(key="analisis_wrap"):
     st.markdown(
         """
         <div class="text-center">
-          <h2 class="section-title">Coba SiCorn Sekarang</h2>
+          <h2 class="section-title">Coba CornLeaf Detect Sekarang</h2>
           <p class="section-subtitle" style="margin:12px auto 0; text-align:center; display:block;">Unggah foto daun jagung Anda dan dapatkan
           diagnosis beserta rekomendasi penanganan.</p>
         </div>
