@@ -1,4 +1,4 @@
-# 🌽 SiCorn — Klasifikasi Penyakit Daun Jagung
+# 🌽 CornLeaf Detect — Klasifikasi Penyakit Daun Jagung
 
 Landing page satu halaman (Streamlit) untuk model `model_mobilenetv2_daun_jagung.keras`.
 Navbar (Beranda, Fitur, Cara Kerja, Tentang Kami) melakukan **scroll ke section**,
