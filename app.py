@@ -67,7 +67,6 @@ CLASS_INFO = [
     },
 ]
 
-# FUNGSI BANTU — MODEL
 
 @st.cache_resource(show_spinner=False)
 def load_model():
@@ -111,7 +110,6 @@ def predict_image(model, image: Image.Image):
     
     return idx, confidence, preds
 
-# HELPER — encode gambar ke base64 agar bisa dipakai di CSS url()
 
 import base64
 import os
